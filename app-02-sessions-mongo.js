@@ -3,6 +3,15 @@ const PORT = process.env.PORT || 8080;
 const body_parser = require('body-parser');
 const session = require('express-session');
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const user_schema = new Schema({
+    name: {
+        type: String,
+        required: true
+    }
+});
+const user_model = mongoose.model('user', user_schema);
 
 let app = express();
 
@@ -38,7 +47,7 @@ app.get('/', is_logged_handler, (req, res, next) => {
     res.write(`
     <html>
     <body>
-        Logged in as user: ${user}
+        Logged in as user: ${user.name}
         <form action="/logout" method="POST">
             <button type="submit">Log out</button>
         </form>
@@ -74,29 +83,38 @@ app.get('/login', (req, res, next) => {
 
 app.post('/login', (req, res, next) => {
     const user_name = req.body.user_name;
-    let user = users.find((name) => {
-        return user_name == name;
+    user_model.findOne({
+        name: user_name
+    }).then((user) => {
+        if (user) {
+            req.session.user = user;
+            return res.redirect('/');
+        }
+
+        res.redirect('/login');
     });
-    if (user) {
-        console.log('User logged in: ', user);
-        req.session.user = user;
-        return res.redirect('/');
-    }
-    console.log('User name not registered: ', user);
-    res.redirect('/login');
 });
 
 app.post('/register', (req, res, next) => {
     const user_name = req.body.user_name;
-    let user = users.find((name) => {
-        return user_name == name;
+
+    user_model.findOne({
+        name: user_name
+    }).then((user) => {
+        if (user) {
+            console.log('User name already registered');
+            return res.redirect('/login');
+        }
+
+        let new_user = new user_model({
+            name: user_name
+        });
+
+        new_user.save().then(() => {
+            return res.redirect('/login');
+        });
+
     });
-    if (user) {
-        return res.send('User name already registered');
-    }
-    users.push(user_name);
-    console.log('users:', users);
-    res.redirect('/login');
 });
 
 app.use((req, res, next) => {
@@ -108,7 +126,7 @@ app.use((req, res, next) => {
 
 //Shutdown server CTRL + C in terminal
 
-const mongoose_url = 'mongodb+srv://db-user:YLTjPCMRRiSeKOLY@cluster0-ntk5k.mongodb.net/test?retryWrites=true&w=majority';
+const mongoose_url = 'mongodb+srv://db-user:YLTjPCMRRiSeKOLY@cluster0-soknu.mongodb.net/test?retryWrites=true&w=majority';
 
 mongoose.connect(mongoose_url, {
     useUnifiedTopology: true,
