@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app-03-mongo-arrays.js",
-    "start-dev": "nodemon app-03-mongo-arrays.js"
+    "start": "node app-04-mongo-delete.js",
+    "start-dev": "nodemon app-04-mongo-delete.js"
   },
   "repository": {
     "type": "git",
