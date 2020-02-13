@@ -42,8 +42,6 @@ app.use(session({
     }
 }));
 
-let users = [];
-
 app.use((req, res, next) => {
     console.log(`path: ${req.path}`);
     next();
